@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>MoonyBets game verifier</title>
+		<meta name="description" content="Prove the MoonyBets crash game is fair. All games have been generated before any bet has been placed.">
+		<meta name="keywords" content="MoonyBets, provably fair, crash game, gambling, bitcoin">
+		<meta name="author" content="moonybets.com">
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no, user-scalable=no">
+
+		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css" integrity="sha384-B0vP5xmATw1+K9KRQjQERJvTumQW0nPEzvF6L/Z6nronJ3oUOFUFpCjEUQouq2+l" crossorigin="anonymous">
+
+		<script src="https://code.jquery.com/jquery-3.5.1.min.js" integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>
+
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/crypto-js.min.js" crossorigin="anonymous"></script>
+
+		<style type="text/css">
+			.table-dark {
+				background-color: #101044;
+			}
+		</style>
+	</head>
+
+	<body class="text-monospace" style="background-color: #101020; color: white;">
+
+		<div class="container-fluid py-2">
+			<div class="py-2">
+				<a class="pb-2 pb-md-0 d-flex align-items-center justify-content-center justify-content-md-start" href="https://moonybets.com" target="_blank" style="text-decoration: none">
+					<img src="https://moonybets.com/img/logo-sq.png" class="mr-1 mr-md-2" alt="MoonyBets logo" style="max-height: 35px;">
+					<span class='h2 text-warning m-0'>MoonyBets</span>
+				</a>
+			</div>
+		</div>
+
+		<div class="container">
+			<div class="row justify-content-center">
+				<div class="col-12 col-md-8 col-lg-6 text-center py-3">
+					<h1 class='text-warning'>Game verifier</h1>
+					<p>Prove the game is fair by yourself</p>
+
+					<form class="text-left py-3">
+						<label for="hash">Game hash:</label>
+						<input type="text" id="hash" placeholder="Paste the hash you want to verify" class="form-control mb-3" required="">
+						<label for="salt">Secret key (salt):</label>
+						<input type="text" id="salt" value="SSS (Super Secret Salt) which is not so secret, but it is still super!" class="form-control mb-3" readonly="">
+						<div class="d-flex justify-content-between align-items-center">
+							<button class="btn btn-success">Verify hash</button>
+							<a href="https://github.com/moonybets/moonybets.github.io" target="_blank" class="small">Explore the code behind this verifier</a>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+
+		<div id="results" class="container d-none">
+
+			<div class="table-responsive">
+				<table class="table table-striped table-dark">
+					<thead>
+						<tr>
+							<th>Game hash</th>
+							<th>Multiplier</th>
+						</tr>
+					</thead>
+					<tbody>
+					</tbody>
+				</table>
+			</div>
+
+			<small class='text-muted pb-5'>First element in table is the hash you searched to verify. Next hash is for the previous game and so on.</small>
+		</div>
+
+
+		<div class="container mt-5 pt-5">
+			<h2 class="h3 pt-4">How can I check the crash game fairness?</h2>
+
+			<p class="pl-3 pl-md-5">By using the above form and entering any hash from any game, you will be able to prove the game result (the multiplier).</p>
+			<p class="pl-3 pl-md-5">You can get the hash from any game by simply accessing https://moonybets.com/game/crash?game=[the_game_id_of_your_choice]</p>
+
+			<h2 class="h3 pt-4">How this tool prove the crash game is fair?</h2>
+
+			<p class="pl-3 pl-md-5">There is nothing hidden to your eyes. You can check how this tool works by accessing <a href="https://github.com/moonybets/moonybets.github.io" target="_blank">https://github.com/moonybets/moonybets.github.io</a>.</p>
+			<p class="pl-3 pl-md-5">You will see how multipliers are obtained from game hash and how hashes are generated.</p>
+
+			<h2 class="h3 pt-4">How are multipliers (game results) obtained?</h2>
+
+			<p class="pl-3 pl-md-5">Please, refer to <a href="https://github.com/moonybets/moonybets.github.io" target="_blank">https://github.com/moonybets/moonybets.github.io</a>, where you will find a function called <strong>getMultiplier(game_hash, salt)</strong>.</p>
+			<p class="pl-3 pl-md-5">This three-line function do the following steps:</p>
+			<ul class="pl-3 pl-md-5">
+				<li>Gets only the first 11 characters from game_hash param.</li>
+				<li>Converts the 11 hexadecimal number to a decimal value, stored in <em>dec</em> variable.</li>
+				<li>Normalizes the <em>dec</em> value into a value between 0 and 1. This is done by dividing <em>dec</em> by 16<sup>11</sup>. 16<sup>11</sup> is the maximum value the 11 hexadecimal characters length can reach (16 posible values [0-9a-f], 11 characters length).</li>
+				<li>Finally, 0.99 is divided by this result and rounded to 2 decimals. The minimum value is 1, that is why the Math.max is called. 0.99 is used as dividend because the 1% house edge.</li>
+			</ul>
+
+			<h2 class="h3 pt-4">How are game hashes generated?</h2>
+
+			<p class="pl-3 pl-md-5">If you don't know what a hash is, you should read <a href="https://en.wikipedia.org/wiki/Hash_function" target="_blank">Hash function</a> and <a href="https://en.wikipedia.org/wiki/Cryptographic_hash_function" target="_blank">Cryptographic hash function</a> articles in Wikipedia.</p>
+
+			<p class="pl-3 pl-md-5">There is a secret phrase, only known by one person, which was used to generate the first hash. Second hash is a hash of the first hash. Third hash is the hash of the second hash... That is why you can get all hashes and results of previous games from one single hash.</p>
+			<p class="pl-3 pl-md-5">10.000.000 (10 million) hashes have been generated by 23rd January 2021.</p>
+			<p class="pl-3 pl-md-5">Game with ID 1 has 10.000.000th hash and Game with ID 10.000.000 has the first hash.</p>
+			<p class="pl-3 pl-md-5">When the game with ID 10.000.000 will be played, the secret phrase will be revealed.</p>
+
+
+			<p class="text-warning py-5">As you can see, there is no possible manipulation of hashes or multipliers independently of players, bets, results, profit or loss.</p>
+
+			<p>Hash of Game with ID 1 is: <span class='btn btn-outline-light py-0 px-1'>a784e45b58d5008dd7a4bf3f73a759bfc36de8c038d77500e04aaac460fb414f</span>. So, if you get the hash of the game with ID n and you hash it n-1 times, you have to get this hash. In other words:</p> 
+			<pre style="background-color: #222; width: auto; color: #8fcaff;" class="p-3">
+let hash = hash_of_game_with_id_n; // replace with your preferred hash
+const n  = ...;                    // id of your preferred game
+
+let salt = "SSS (Super Secret Salt) which is not so secret, but it is still super!";
+
+for (let i = n - 1; i > 0; i--) {
+
+	hash = hmacSHA256(hash, salt).toHexadecimal();
+}
+
+// This hash will be a784e45b58d5008dd7a4bf3f73a759bfc36de8c038d77500e04aaac460fb414f
+console.log(hash);</pre>
+		</div>
+
+
+		<script>
+			function getMultiplier(game_hash, salt) {
+
+				let dec = parseInt(game_hash.slice(0, 11), 16); // first 11 hexadecimal chars to its decimal value
+
+				let d = dec / Math.pow(16, 11); // normalize (0 to 1) 11 hexadecimal (base 16) chars
+
+				return Math.floor(Math.max(1, .99/d) * 100) / 100; // From 1 to infinity, two decimals multiplier
+
+				// House edge is 1% due to the previous 0.99/d division
+			}
+
+			$(function(){
+				var urlParams = new URLSearchParams(window.location.search);
+				if (urlParams.has('hash')) {
+					$("#hash").val(urlParams.get('hash'));
+				}
+
+				const salt = $("#salt").val();
+
+				$('button').on('click', function(e){
+					e.preventDefault();
+
+					$("#results").removeClass('d-none');
+					$("#results table tbody").html('');
+					
+					let hash = $("#hash").val();
+
+					for (var i = 1; i <= 10; i++) {
+						
+						let multiplier = getMultiplier(hash, salt);
+
+						$("#results table tbody").append(`<tr style='opacity: `+ (1.5/i) +`'>
+							<td>` + hash + `</td>
+							<td class='`+(multiplier >= 2 ? 'text-success' : 'text-danger')+`'>` + multiplier + `x</td>
+						</tr>`);
+
+						hash = CryptoJS.HmacSHA256(hash, salt).toString(CryptoJS.enc.Hex);
+					}
+
+				});
+			});
+		</script>
+
+	</body>
+</html>
